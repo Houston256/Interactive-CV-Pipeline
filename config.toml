@@ -1,0 +1,26 @@
+# https://docs.opencv.org/3.4/d4/da8/group__imgcodecs.html
+# Windows bitmaps - *.bmp, *.dib (always supported)
+# JPEG files - *.jpeg, *.jpg, *.jpe (see the Note section)
+# Portable Network Graphics - *.png (see the Note section)
+# Portable image format - *.pbm, *.pgm, *.ppm *.pxm, *.pnm (always supported)
+# Sun rasters - *.sr, *.ras (always supported)
+# TIFF files - *.tiff, *.tif (see the Note section)
+[image]
+title = "Types of Images"
+types = [
+    "bmp",
+    "jpeg",
+    "jpg",
+    "jpe",
+    "png",
+    "pbm",
+    "pgm",
+    "ppm",
+    "pxm",
+    "pnm",
+    "sr",
+    "ras",
+    "tiff",
+    "tif",
+]
+max_size_mb = 200

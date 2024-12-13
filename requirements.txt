@@ -1,0 +1,14 @@
+# Please run with python >= 3.11
+numpy
+pandas
+matplotlib
+streamlit >= 1.35.0
+streamlit_option_menu
+opencv-python
+pillow
+scikit-image
+streamlit-image-comparison
+toml
+pytest
+seaborn
+pylint
