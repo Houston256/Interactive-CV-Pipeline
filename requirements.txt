@@ -2,9 +2,9 @@
 numpy
 pandas
 matplotlib
-streamlit >= 1.35.0
+streamlit >= 1.41.1
 streamlit_option_menu
-opencv-python
+opencv-python-headless
 pillow
 scikit-image
 streamlit-image-comparison
