@@ -1,7 +1,0 @@
-- @cache_xxx caches the files across sessions, which is not what i want. session_state it is
-- streamlit doesn't really support dynamic number of pages, so lots of widgets have to be cached
-- tried using st.pages but apparently it renders all pages at once, which goes against my expectations
-- oh common [redraw docs](https://github.com/streamlit/docs/issues/88)
-- [st default values](https://discuss.streamlit.io/t/why-do-default-values-cause-a-session-state-warning/15485/34)
-- [histogram eq doesn't work for color intensity](https://stackoverflow.com/questions/15007304/histogram-equalization-not-working-on-color-image-opencv)
-- [st widget removed from session_state](https://docs.streamlit.io/develop/concepts/architecture/widget-behavior#save-widget-values-in-session-state-to-preserve-them-between-pages)

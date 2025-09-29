@@ -1,0 +1,21 @@
+[project]
+name = "interactive-cv-pipeline"
+version = "0.1.0"
+description = "Interactive computer vision pipeline"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.10.6",
+    "numpy>=2.3.3",
+    "opencv-python-headless>=4.11.0.86",
+    "pandas>=2.3.2",
+    "pillow>=11.3.0",
+    "pylint>=3.3.8",
+    "pytest>=8.4.2",
+    "scikit-image>=0.25.2",
+    "seaborn>=0.13.2",
+    "streamlit>=1.50.0",
+    "streamlit-image-comparison>=0.0.4",
+    "streamlit-option-menu>=0.4.0",
+    "toml>=0.10.2",
+]
