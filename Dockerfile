@@ -11,6 +11,6 @@ COPY . .
 
 EXPOSE ${PORT}
 
-HEALTHCHECK CMD curl --fail http://localhost:${PORT}/_stcore/health || exit 1
+HEALTHCHECK CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT}/_stcore/health')" || exit 1
 
 CMD uv run python -m streamlit run src/main.py --server.port=${PORT} --server.address=0.0.0.0
