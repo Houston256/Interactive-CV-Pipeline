@@ -27,7 +27,7 @@ class Prewitt(Layer):
     def interact(self):
         self.set_image(self.img_in)
 
-        st.image(self.img_out, use_column_width='always')
+        st.image(self.img_out, width="stretch")
 
         return self
 

@@ -97,12 +97,12 @@ class Sequential:
         """
         st.sidebar.title('Image Processing Pipeline')
 
-        st.title(self.layers[self.layer_idx_default])
+        st.title(str(self.layers[self.layer_idx_default]))
 
         st.sidebar.radio(
             label="Layers",
             options=range(len(self.layers)),
-            format_func=lambda x: self.layers[x],
+            format_func=lambda x: str(self.layers[x]),
             on_change=self.change_layer,
             key='layer_idx',
         )
