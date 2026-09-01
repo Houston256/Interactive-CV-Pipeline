@@ -1,8 +1,35 @@
 services:
   app:
+    image: "${IMAGand E_REF:-ghcr.io/houston256/interactive-cv-pipeline:latest}"
     build: .
     ports:
-      - "${PORT}:${PORT}"
-    environment:
-      - PORT=${PORT}
+      - target: 8501
+        published: "${PORT:-8501}"
+        host_ip: 127.0.0.1
+        protocol: tcp
     restart: unless-stopped
+    init: true
+
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777,noexec,nosuid,nodev
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+    # Caps what one session can take from the host.
+    mem_limit: 2g
+    memswap_limit: 2g
+    cpus: 1.5
+    pids_limit: 256
+    ulimits:
+      nofile:
+        soft: 1024
+        hard: 1024
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

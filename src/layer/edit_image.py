@@ -26,11 +26,14 @@ class EditImage(Layer):
         self.set_image(image)
 
     def evaluate(self):
+        contrast = self.bounded_float('contrast', 1.0, 0.0, 2.0)
+        brightness = self.bounded_int('brightness', 0, 0, 100)
+        gamma = self.bounded_float('gamma', 1.0, 0.0, 2.0)
         self.img_out = cv2.convertScaleAbs(self.img_in,
-                                           alpha=self.ui_params['contrast'],
-                                           beta=self.ui_params['brightness'])
+                                           alpha=contrast,
+                                           beta=brightness)
 
-        self.img_out = adjust_gamma(self.img_out, gamma=self.ui_params['gamma'])
+        self.img_out = adjust_gamma(self.img_out, gamma=gamma)
         return self
 
     def interact(self):

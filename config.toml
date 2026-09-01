@@ -1,26 +1,17 @@
-# https://docs.opencv.org/3.4/d4/da8/group__imgcodecs.html
-# Windows bitmaps - *.bmp, *.dib (always supported)
-# JPEG files - *.jpeg, *.jpg, *.jpe (see the Note section)
-# Portable Network Graphics - *.png (see the Note section)
-# Portable image format - *.pbm, *.pgm, *.ppm *.pxm, *.pnm (always supported)
-# Sun rasters - *.sr, *.ras (always supported)
-# TIFF files - *.tiff, *.tif (see the Note section)
+# Formats the uploader accepts. Dropped tiff, netpbm, pxm, sr, jpe.
 [image]
 title = "Types of Images"
 types = [
     "bmp",
     "jpeg",
     "jpg",
-    "jpe",
     "png",
-    "pbm",
-    "pgm",
-    "ppm",
-    "pxm",
-    "pnm",
-    "sr",
-    "ras",
-    "tiff",
-    "tif",
 ]
-max_size_mb = 200
+# Rejected above these. Checked from the header before decoding.
+max_size_mb = 5
+max_megapixels = 40
+max_side_px = 8000
+# Downscaled to this after decoding.
+target_side_px = 2560
+# Max layers in the pipeline. Each layer holds two copies of the image.
+max_layers = 16

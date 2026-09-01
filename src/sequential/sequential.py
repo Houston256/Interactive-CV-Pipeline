@@ -22,11 +22,18 @@ class Sequential:
         self.layers = [UploadImage()]
         self.layer_idx_default = 0
         self.factory = LayerFactory()
+        self.max_layers = st.session_state.get('conf', {}).get('image', {}).get('max_layers', 16)
 
     def add_layer(self, layer):
         """
         Add a new layer to the sequence. The new layer is initialized with the output image of the previous layers.
         """
+        if layer is None:
+            st.sidebar.error('Unknown layer.')
+            return self
+        if len(self.layers) >= self.max_layers:
+            st.sidebar.error(f'Pipeline is limited to {self.max_layers} layers.')
+            return self
         if self.get_img() is None:
             st.sidebar.error('Pipeline yields None. Did you forget to upload an image?')
             return self
@@ -47,11 +54,21 @@ class Sequential:
             self.layers[i].set_image(prev_img)
         return self.get_img()
 
+    def current_idx(self) -> int:
+        """
+        Layer index from the client, clamped to the layers that actually exist.
+        """
+        idx = st.session_state.get('layer_idx', 0)
+        if type(idx) is not int or not 0 <= idx < len(self.layers):
+            idx = len(self.layers) - 1
+            st.session_state.layer_idx = idx
+        return idx
+
     def prepare_ui(self):
         """
         Prepare the UI for the Sequential object by setting the default UI parameters.
         """
-        self.layer_idx_default = st.session_state.layer_idx
+        self.layer_idx_default = self.current_idx()
         return self
 
     def get_img(self) -> np.ndarray:
@@ -71,8 +88,8 @@ class Sequential:
         """
         Update the UI parameters when user switches between layers.
         """
-        self.layer_idx_default = st.session_state.layer_idx
-        self.layers[st.session_state.layer_idx].prepare_ui()
+        self.layer_idx_default = self.current_idx()
+        self.layers[self.layer_idx_default].prepare_ui()
         self.prepare_ui()
         return self
 
@@ -122,7 +139,10 @@ class Sequential:
 
         pop.button('Add',
                    on_click=self.add_layer,
-                   args=[layer])
+                   args=[layer],
+                   disabled=len(self.layers) >= self.max_layers,
+                   help=f'Pipeline is limited to {self.max_layers} layers.'
+                   if len(self.layers) >= self.max_layers else None)
 
         col_remove.button('Remove Last',
                           on_click=self.remove_last,
@@ -132,4 +152,4 @@ class Sequential:
 
         self.evaluate()
 
-        self.layers[st.session_state.layer_idx].interact()
+        self.layers[self.current_idx()].interact()

@@ -14,10 +14,11 @@ class GaussianFilter(Convolve):
         self.set_image(image)
 
     def evaluate(self):
+        kernel_size = self.bounded_int('kernel_size', 3, 3, 15, odd=True)
         self.img_out = self.img_in.copy()
 
         self.img_out = cv2.GaussianBlur(self.img_out,
-                                        ksize=(self.ui_params['kernel_size'], self.ui_params['kernel_size']),
+                                        ksize=(kernel_size, kernel_size),
                                         sigmaX=0)
 
         return self

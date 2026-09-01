@@ -1,8 +1,15 @@
 .git
+.gitignore
+.dockerignore
 __pycache__
 *.pyc
 .venv
+.venv*
 .env
 .pytest_cache
 .mypy_cache
+.idea
+.DS_Store
+*.egg-info
 tests/
+README.md

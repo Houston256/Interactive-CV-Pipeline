@@ -3,7 +3,7 @@ gatherUsageStats = false
 
 [client]
 showErrorDetails = "none"
-toolbarMode = "minimal"
+toolbarMode = "viewer"
 showSidebarNavigation = true
 #enforceSerializableSessionState = true
 
@@ -11,3 +11,13 @@ showSidebarNavigation = true
 headless = true
 runOnSave = false
 showEmailPrompt = false
+# Also enforced in src/layer/upload_image.py.
+maxUploadSize = 5
+# Max size of one websocket message, MB.
+maxMessageSize = 8
+enableXsrfProtection = true
+enableCORS = true
+enableStaticServing = false
+fileWatcherType = "none"
+# Release uploaded files and pipeline state promptly after a client disconnects.
+disconnectedSessionTTL = 30

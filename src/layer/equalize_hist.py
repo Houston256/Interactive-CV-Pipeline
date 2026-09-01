@@ -39,13 +39,14 @@ class EqualizeHist(Layer):
         """
         Apply the selected histogram equalization method to the image.
         """
-        key = self.ui_params['option_idx']
+        key = self.bounded_int('option_idx', 0, 0, len(self.options) - 1)
         key = self.options[key]
+        kernel_size = self.bounded_int('kernel_size', 3, 3, 15, odd=True)
 
         self.img_out = self.img_in.copy()
 
         clahe = cv2.createCLAHE(clipLimit=2.0,
-                                tileGridSize=tuple(2 * [self.ui_params['kernel_size']]))
+                                tileGridSize=(kernel_size, kernel_size))
         # grayscale image
         if self.img_in.ndim == 2:
             if key == 'Histogram Equalization':

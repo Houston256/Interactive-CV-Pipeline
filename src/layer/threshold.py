@@ -21,9 +21,15 @@ class DoubleThreshold(Layer):
         self.set_image(image)
 
     def evaluate(self):
+        intensity = self.bounded_range('intensity', (0, 255), 0, 255)
+        hue = self.bounded_range('hue', (0, 360), 0, 360)
+        saturation = self.bounded_range('saturation', (0, 255), 0, 255)
+        value = self.bounded_range('value', (0, 255), 0, 255)
+        ranges = {'hue': hue, 'saturation': saturation, 'value': value}
+        show_masked = self.bounded_bool('mask', False)
         # grayscale
         if self.img_in.ndim == 2:
-            mask = cv2.inRange(self.img_in, *self.ui_params['intensity'])
+            mask = cv2.inRange(self.img_in, *intensity)
         # color
         else:
             # convert to hsv
@@ -32,14 +38,14 @@ class DoubleThreshold(Layer):
             lbound = []
             ubound = []
             for k in ['hue', 'saturation', 'value']:
-                lbound += [self.ui_params[k][0]]
-                ubound += [self.ui_params[k][1]]
+                lbound += [ranges[k][0]]
+                ubound += [ranges[k][1]]
             lbound = np.array(lbound)
             ubound = np.array(ubound)
             # threshold
             mask = cv2.inRange(hsv, lbound, ubound)
         # apply mask to image
-        if self.ui_params['mask']:
+        if show_masked:
             if self.img_in.ndim == 3:
                 # mask has to be 3 channel
                 mask = cv2.merge(3 * [mask])

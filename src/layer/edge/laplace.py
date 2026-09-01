@@ -15,9 +15,10 @@ class LaplacianFilter(Layer):
         self.set_image(image)
 
     def evaluate(self):
+        kernel_size = self.bounded_int('kernel_size', 3, 3, 19, odd=True)
         self.img_out = self.img_in.copy()
 
-        self.img_out = cv2.Laplacian(self.img_out, cv2.CV_64F, ksize=self.ui_params['kernel_size'])
+        self.img_out = cv2.Laplacian(self.img_out, cv2.CV_64F, ksize=kernel_size)
 
         self.img_out *= 255
 

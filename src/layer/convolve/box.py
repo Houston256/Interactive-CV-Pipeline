@@ -20,10 +20,10 @@ class BoxFilter(Layer):
         self.set_image(image)
 
     def evaluate(self):
+        kernel_size = self.bounded_int('kernel_size', 3, 3, 15, odd=True)
         self.img_out = self.img_in.copy()
 
-        kernel = np.ones((self.ui_params['kernel_size'], self.ui_params['kernel_size']), np.float32) / (
-                    self.ui_params['kernel_size'] ** 2)
+        kernel = np.ones((kernel_size, kernel_size), np.float32) / (kernel_size ** 2)
 
         self.img_out = cv2.filter2D(self.img_out, -1, kernel)
 

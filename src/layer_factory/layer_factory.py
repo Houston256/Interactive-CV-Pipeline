@@ -23,8 +23,12 @@ class LayerFactory:
         """
         Get the layer class corresponding to the given layer name.
         :param layer_name: name of layer
-        :return: Layer class
+        :return: Layer class, or None if the name is not a known layer
         """
+        # A client can put an arbitrary string in the selectbox's widget state,
+        # so only names in self.layers are looked up.
+        if layer_name not in self.layers:
+            return None
         module_name, class_name = self.layers[layer_name]
         return getattr(import_module(module_name), class_name)
 

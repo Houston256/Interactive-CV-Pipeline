@@ -1,17 +1,20 @@
+import tomllib
+
 import numpy as np
 import streamlit as st
-import toml
 
 
 def cache_config():
     if 'conf' not in st.session_state:
-        st.session_state['conf'] = toml.load("config.toml")
+        with open('config.toml', 'rb') as config_file:
+            st.session_state['conf'] = tomllib.load(config_file)
 
 
 def draw_histogram(image: np.ndarray):
-    from matplotlib import pyplot as plt
+    # Figure() not plt.subplots(); pyplot never frees the figures it creates.
+    from matplotlib.figure import Figure
 
-    arr = image.ravel()
-    fig, ax = plt.subplots()
-    ax.hist(arr, bins=100)
+    fig = Figure()
+    ax = fig.subplots()
+    ax.hist(image.ravel(), bins=100)
     st.pyplot(fig)

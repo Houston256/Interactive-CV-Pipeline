@@ -17,6 +17,8 @@ class Canny(Layer):
         self.set_image(image)
 
     def evaluate(self):
+        sigma = self.bounded_float('sigma', 1.0, 0.0, 10.0)
+        threshold = self.bounded_range('threshold', (0.1, 0.2), 0.0, 1.0)
         if self.img_in.ndim == 3:
             self.img_out = cv2.cvtColor(self.img_in, cv2.COLOR_RGB2GRAY)
         else:
@@ -24,9 +26,9 @@ class Canny(Layer):
 
         self.img_out = canny(
             image=self.img_out,
-            sigma=self.ui_params['sigma'],
-            low_threshold=self.ui_params['threshold'][0],
-            high_threshold=self.ui_params['threshold'][1]
+            sigma=sigma,
+            low_threshold=threshold[0],
+            high_threshold=threshold[1]
         )
         self.img_out = self.img_out.astype(np.uint8) * 255
         return self
@@ -48,7 +50,7 @@ class Canny(Layer):
         st.slider(
             label='Sigma',
             min_value=0.,
-            max_value=100.,
+            max_value=10.,
             step=0.05,
             on_change=self.changed,
             key='sigma',
