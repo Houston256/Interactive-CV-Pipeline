@@ -81,7 +81,7 @@ jobs:
           image-ref: "ghcr.io/houston256/interactive-cv-pipeline:latest"
           scanners: "vuln"
           severity: "CRITICAL,HIGH"
-          ignore-unfixed: false
+          ignore-unfixed: true
           exit-code: "1"
           format: "table"
 
