@@ -34,4 +34,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
     CMD [".venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=2)"]
 
 # Exec directly so signals reach Streamlit and environment values cannot alter the command.
-CMD [".venv/bin/python", "src/server.py"]
+CMD [".venv/bin/python", "-m", "src.server"]
