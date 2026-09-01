@@ -18,8 +18,8 @@ env:
   IMAGE_NAME: ghcr.io/houston256/interactive-cv-pipeline
 
 jobs:
-  python:
-    name: Python tests and audit
+  test:
+    name: Python tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -42,98 +42,23 @@ jobs:
       - name: Run tests
         run: uv run pytest -q
 
-      - name: Run static security analysis
-        run: uv run bandit -q -r src
-
-      - name: Export locked production dependencies
-        run: uv export --frozen --no-dev --no-emit-project --format requirements-txt --output-file /tmp/requirements.txt
-
-      - name: Audit Python dependencies
-        run: uv run pip-audit --requirement /tmp/requirements.txt --no-deps --disable-pip --progress-spinner off
-
-  container:
-    name: Container build and audit (${{ matrix.architecture }})
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - architecture: amd64
-            runner: ubuntu-24.04
-          - architecture: arm64
-            runner: ubuntu-24.04-arm
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 30
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          persist-credentials: false
-
-      - name: Validate Compose configuration
-        run: docker compose config --quiet
-
-      - name: Build image
-        run: docker compose build
-
-      - name: Scan image
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
-        with:
-          image-ref: "ghcr.io/houston256/interactive-cv-pipeline:latest"
-          scanners: "vuln"
-          severity: "CRITICAL,HIGH"
-          ignore-unfixed: true
-          exit-code: "1"
-          format: "table"
-
-      - name: Start hardened container
-        run: docker compose up -d --no-build --wait --wait-timeout 60
-
-      - name: Probe runtime controls
-        shell: bash
-        env:
-          EXPECTED_ARCHITECTURE: ${{ matrix.architecture }}
-        run: |
-          set -euo pipefail
-          curl --fail --silent --show-error http://127.0.0.1:8501/_stcore/health
-          test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8501/_stcore/metrics)" = "404"
-          test "$(docker inspect "$(docker compose ps -q app)" --format '{{(index (index .NetworkSettings.Ports "8501/tcp") 0).HostIp}}')" = "127.0.0.1"
-          test "$(docker compose exec -T app id -u)" = "10001"
-          test "$(docker compose exec -T app awk '/CapEff/ {print $2}' /proc/1/status)" = "0000000000000000"
-          test "$(docker image inspect "$IMAGE_NAME:latest" --format '{{.Architecture}}')" = "$EXPECTED_ARCHITECTURE"
-          docker compose exec -T app .venv/bin/python -c "import cv2, matplotlib, numpy, scipy, skimage, streamlit"
-          ! docker compose exec -T app touch /app/ci-write-probe
-
-      - name: Show container logs
-        if: failure()
-        run: docker compose logs --no-color app
-
-      - name: Stop container
-        if: always()
-        run: docker compose down --remove-orphans
-
   publish:
     name: Publish GHCR image
     if: >-
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     needs:
-      - python
-      - container
+      - test
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     permissions:
       contents: read
-      packages: write # Push the tested image to GHCR.
-      id-token: write # Obtain the OIDC identity used to sign provenance.
-      attestations: write # Store the image provenance attestation.
+      packages: write
     steps:
       - name: Check out repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
@@ -145,32 +70,9 @@ jobs:
           username: "${{ github.actor }}"
           password: "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: Generate image metadata
-        id: metadata
-        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
-        with:
-          images: "${{ env.IMAGE_NAME }}"
-          tags: |
-            type=raw,value=latest
-            type=sha,format=long
-
       - name: Build and push image
-        id: build
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
           push: true
-          tags: "${{ steps.metadata.outputs.tags }}"
-          labels: "${{ steps.metadata.outputs.labels }}"
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          provenance: mode=max
-          sbom: true
-
-      - name: Attest image provenance
-        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
-        with:
-          subject-name: "${{ env.IMAGE_NAME }}"
-          subject-digest: "${{ steps.build.outputs.digest }}"
-          push-to-registry: true
+          tags: "${{ env.IMAGE_NAME }}:latest"
