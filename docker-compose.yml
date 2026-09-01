@@ -1,6 +1,6 @@
 services:
   app:
-    image: "${IMAGand E_REF:-ghcr.io/houston256/interactive-cv-pipeline:latest}"
+    image: "${IMAGE_REF:-ghcr.io/houston256/interactive-cv-pipeline:latest}"
     build: .
     ports:
       - target: 8501
