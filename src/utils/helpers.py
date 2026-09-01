@@ -1,7 +1,6 @@
 import numpy as np
 import streamlit as st
 import toml
-from matplotlib import pyplot as plt
 
 
 def cache_config():
@@ -10,6 +9,8 @@ def cache_config():
 
 
 def draw_histogram(image: np.ndarray):
+    from matplotlib import pyplot as plt
+
     arr = image.ravel()
     fig, ax = plt.subplots()
     ax.hist(arr, bins=100)

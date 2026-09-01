@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import streamlit as st
-from matplotlib import pyplot as plt
 from skimage.measure import find_contours
 
 from src.layer.layer import Layer
@@ -35,6 +34,8 @@ class FindContours(Layer):
         return self
 
     def interact(self):
+        from matplotlib import pyplot as plt
+
         self.set_image(self.img_in)
 
         if self.img_in.ndim == 3:

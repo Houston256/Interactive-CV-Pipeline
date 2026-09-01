@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
-import seaborn as sns
 import streamlit as st
-from matplotlib import pyplot as plt
 
 from src.layer.layer import Layer
 
@@ -49,6 +47,9 @@ class Morphology(Layer):
         return self
 
     def interact(self):
+        from matplotlib import pyplot as plt
+        import seaborn as sns
+
         if self.img_in.ndim == 3:
             st.info('Morphology operations will be applied to each channel separately.')
 
