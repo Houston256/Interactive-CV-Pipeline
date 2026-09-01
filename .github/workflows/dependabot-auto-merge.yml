@@ -1,0 +1,78 @@
+name: Dependabot auto-merge
+
+on:
+  workflow_run: # zizmor: ignore[dangerous-triggers] No PR code or artifacts execute here.
+    workflows:
+      - CI
+    types:
+      - completed
+
+permissions: {}
+
+concurrency:
+  group: dependabot-auto-merge
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    name: Merge tested Dependabot update
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]' &&
+      github.event.workflow_run.pull_requests[0].number != null
+    permissions:
+      actions: write # Dispatch CI on the merged main revision.
+      contents: write # Merge the exact tested commit through the GitHub API.
+      pull-requests: read # Verify live PR author, state, base, repository, and head SHA.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # workflow_run has a write-capable token. Never check out or execute PR code here.
+      - name: Verify and merge the tested revision
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+          REPOSITORY: ${{ github.repository }}
+          TESTED_BASE_SHA: ${{ github.event.workflow_run.pull_requests[0].base.sha }}
+          TESTED_HEAD_SHA: ${{ github.event.workflow_run.pull_requests[0].head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          pr="$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER")"
+          test "$(jq -r '.user.login' <<<"$pr")" = "dependabot[bot]"
+          test "$(jq -r '.state' <<<"$pr")" = "open"
+          test "$(jq -r '.draft' <<<"$pr")" = "false"
+          test "$(jq -r '.base.ref' <<<"$pr")" = "main"
+          test "$(jq -r '.head.repo.full_name' <<<"$pr")" = "$REPOSITORY"
+          test "$(jq -r '.head.sha' <<<"$pr")" = "$TESTED_HEAD_SHA"
+
+          current_base_sha="$(gh api "repos/$REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+          if [[ "$current_base_sha" != "$TESTED_BASE_SHA" ]]; then
+            echo "The base branch changed after CI started; waiting for Dependabot to rebase and rerun CI."
+            exit 1
+          fi
+
+          settings="$(gh api "repos/$REPOSITORY")"
+          if [[ "$(jq -r '.allow_squash_merge' <<<"$settings")" = "true" ]]; then
+            merge_method="squash"
+          elif [[ "$(jq -r '.allow_merge_commit' <<<"$settings")" = "true" ]]; then
+            merge_method="merge"
+          elif [[ "$(jq -r '.allow_rebase_merge' <<<"$settings")" = "true" ]]; then
+            merge_method="rebase"
+          else
+            echo "No pull-request merge method is enabled."
+            exit 1
+          fi
+
+          result="$(gh api --method PUT "repos/$REPOSITORY/pulls/$PR_NUMBER/merge" \
+            -f merge_method="$merge_method" \
+            -f sha="$TESTED_HEAD_SHA")"
+          test "$(jq -r '.merged' <<<"$result")" = "true"
+
+      # GITHUB_TOKEN merges do not emit another push workflow. workflow_dispatch does.
+      - name: Test merged main and publish image
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run ci.yml --ref main
