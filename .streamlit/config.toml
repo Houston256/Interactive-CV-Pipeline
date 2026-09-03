@@ -3,7 +3,7 @@ gatherUsageStats = false
 
 [client]
 showErrorDetails = "none"
-toolbarMode = "viewer"
+toolbarMode = "minimal"
 showSidebarNavigation = true
 #enforceSerializableSessionState = true
 
